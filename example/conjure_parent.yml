@@ -1,0 +1,21 @@
+files:
+  - id: config
+    path: example/templates/config.yml
+    output: <tags>
+  
+tags:
+  - id: production
+    path: output/config.production.yml
+  - id: development
+    path: output/config.development.yml
+
+groups:
+  - id: conjure<production>
+    values:
+      - id: secret
+        value: productionsecret
+  
+  - id: conjure<development>
+    values:
+      - id: secret
+        value: developmentsecret

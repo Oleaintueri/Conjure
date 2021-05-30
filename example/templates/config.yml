@@ -1,0 +1,3 @@
+host: ${conjure.host}
+port: ${conjure.port}
+secret: ${conjure.secret}

@@ -1,0 +1,37 @@
+inherit: conjure_parent.yml
+
+files:
+  - id: config
+    path: templates/config.yml
+    output: <tags>
+  - id: config
+    port: templates/config.yml
+    output: output/config.default.yml
+
+tags:
+  - id: production
+    path: output/config.production.yml
+  - id: development
+    path: output/config.development.yml
+
+groups:
+  - id: conjure<production>
+    values:
+      - id: host
+        value: 0.0.0.0
+      - id: port
+        value: 8753
+  
+  - id: conjure<development>
+    values:
+      - id: host
+        value: 127.0.0.1
+      - id: port
+        value: 8080
+
+  - id: conjure
+    values:
+      - id: host
+        value: 193.241.344.111
+      - id: port
+        value: 64356
