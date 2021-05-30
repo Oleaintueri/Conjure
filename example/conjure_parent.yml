@@ -21,3 +21,13 @@ groups:
     items:
       - id: secret
         value: developmentsecret
+        
+  - id: conjure<staging>
+    items:
+      - id: secret
+        value: stagingsecret
+  
+  - id: conjure
+    items:
+      - id: secret
+        value: defaultsecret

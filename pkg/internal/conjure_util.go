@@ -27,14 +27,16 @@ func recursiveRemove(s []string, index int) []string{
 // A utility function to extract the id and tag values from a string
 // e.g. someId, tagValue := extractIdTag("someId<tagValue>")
 func ExtractIdTag(idTag string) (id string, tags []string) {
-	re := regexp.MustCompile(`<(.*)>`)
+	re := regexp.MustCompile(`<(\w+)>`)
 
-	tagArr := re.FindStringSubmatch(idTag)
+	tagArr := re.FindAllStringSubmatch(idTag, -1)
 
 	id = re.ReplaceAllString(idTag, "")
 
-	if len(tagArr) > 1 {
-		tags = recursiveRemove(tagArr, 0)
+	if len(tagArr) > 0 {
+		for _, inner := range tagArr {
+			tags = append(tags, recursiveRemove(inner, 0)...)
+		}
 	}
 
 	return

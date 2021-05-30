@@ -103,7 +103,8 @@ func (conjure *Conjure) Recall() error {
 				}
 				targetFile.fileData = backupTemplate
 			}
-		} else {
+		} else if len(targetTags) > 0 {
+			backupTemplate := targetFile.fileData
 			for _, tag := range targetTags {
 				targetFile.currentTag = tag
 				if err := recall(conjure.config, targetFile); err != nil {
@@ -112,8 +113,20 @@ func (conjure *Conjure) Recall() error {
 				if err := conjure.writeFile(targetFile); err != nil {
 					return err
 				}
+				targetFile.fileData = backupTemplate
 			}
+		} else {
+			backupTemplate := targetFile.fileData
+			targetFile.currentTag = ""
+			if err := recall(conjure.config, targetFile); err != nil {
+				return err
+			}
+			if err := conjure.writeFile(targetFile); err != nil {
+				return err
+			}
+			targetFile.fileData = backupTemplate
 		}
+
 	}
 	return nil
 }
@@ -147,6 +160,11 @@ func (inheritance *configInheritance) extract(targetFile []byte, targetTag strin
 	for _, group := range inheritance.config.Groups {
 		groupId, tags = internal.ExtractIdTag(group.Id)
 
+		if tags == nil {
+			// and any groups with no tags
+			tags = append(tags, "")
+		}
+
 		for _, tag := range tags {
 			if tag == targetTag {
 				for _, item := range group.Items {
@@ -155,6 +173,7 @@ func (inheritance *configInheritance) extract(targetFile []byte, targetTag strin
 				}
 			}
 		}
+
 	}
 
 	return targetFile

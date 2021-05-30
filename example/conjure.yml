@@ -1,9 +1,9 @@
 inherit: conjure_parent.yml
 
 files:
-  - id: config
-    path: example/templates/config.yml
-    output: <tags>
+#  - id: config
+#    path: example/templates/config.yml
+#    output: <tags>
   - id: config2
     path: example/templates/config.yml
     output: example/output/config.default.yml
@@ -34,6 +34,13 @@ groups:
       - id: port
         value: 8080
 
+  - id: conjure<staging>
+    items:
+      - id: host
+        value: 194.442.231.32
+      - id: port
+        value: 8333
+  
   - id: conjure
     items:
       - id: host
