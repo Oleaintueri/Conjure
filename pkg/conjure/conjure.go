@@ -1,16 +1,14 @@
 package conjure
 
 import (
-	internal2 "Conjure/internal"
-	"Conjure/pkg/handler"
 	"fmt"
+	"github.com/Oleaintueri/Conjure/internal"
+	"github.com/Oleaintueri/Conjure/pkg/handler"
 	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
 )
-
-type ConjureRecall struct {}
 
 type Conjure struct {
 	*handler.ConjureFileHandler
@@ -26,7 +24,7 @@ func New(config *handler.ConjureFileHandler) (*Conjure, error) {
 
 func (conjure *Conjure) Recall() error {
 	for _, targetFile := range conjure.Config.Files {
-		targetName, targetTags := internal2.ExtractIdTag(targetFile.Output)
+		targetName, targetTags := internal.ExtractIdTag(targetFile.Output)
 		targetFile.CurrentName = targetName
 		if len(targetTags) == 1 && targetTags[0] == "tags" {
 			backupTemplate := targetFile.FileData
@@ -38,7 +36,8 @@ func (conjure *Conjure) Recall() error {
 				/*if err := conjure.writeFile(targetFile); err != nil {
 					return err
 				}*/
-				conjure.recalls = append(conjure.recalls, *targetFile)
+				tmp := *targetFile
+				conjure.recalls = append(conjure.recalls, tmp)
 
 				targetFile.FileData = backupTemplate
 			}
@@ -52,7 +51,9 @@ func (conjure *Conjure) Recall() error {
 				/*if err := conjure.writeFile(targetFile); err != nil {
 					return err
 				}*/
-				conjure.recalls = append(conjure.recalls, *targetFile)
+
+				tmp := *targetFile
+				conjure.recalls = append(conjure.recalls, tmp)
 				targetFile.FileData = backupTemplate
 			}
 		} else {
@@ -64,10 +65,21 @@ func (conjure *Conjure) Recall() error {
 			/*if err := conjure.writeFile(targetFile); err != nil {
 				return err
 			}*/
-			conjure.recalls = append(conjure.recalls, *targetFile)
+
+			tmp := *targetFile
+			conjure.recalls = append(conjure.recalls, tmp)
 			targetFile.FileData = backupTemplate
 		}
 
+	}
+	return nil
+}
+
+func (conjure *Conjure) WriteFiles() error {
+	for _, file := range conjure.recalls {
+		if err := conjure.writeFile(&file); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -99,7 +111,7 @@ func (conjure *Conjure) extract(inheritance *handler.ConjureFileHandler, targetF
 	var groupId string
 
 	for _, group := range inheritance.Config.Groups {
-		groupId, tags = internal2.ExtractIdTag(group.Id)
+		groupId, tags = internal.ExtractIdTag(group.Id)
 
 		if tags == nil {
 			// and any groups with no tags
@@ -131,12 +143,12 @@ func (conjure *Conjure) writeFile(targetFile *handler.ConjureFile) error {
 			tagPath = "."
 		}
 
-		if targetFileName, err = internal2.ParseFilePath(fmt.Sprintf("%s%s", tagPath, targetFile.CurrentName)); err != nil {
+		if targetFileName, err = internal.ParseFilePath(fmt.Sprintf("%s%s", tagPath, targetFile.CurrentName)); err != nil {
 			return err
 		}
 
 	} else {
-		if targetFileName, err = internal2.ParseFilePath(fmt.Sprintf("./%s", targetFile.CurrentName)); err != nil {
+		if targetFileName, err = internal.ParseFilePath(fmt.Sprintf("./%s", targetFile.CurrentName)); err != nil {
 			return err
 		}
 	}

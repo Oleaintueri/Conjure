@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"Conjure/internal"
 	"fmt"
+	"github.com/Oleaintueri/Conjure/internal"
 	"github.com/go-playground/validator"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/json"
@@ -173,8 +173,6 @@ func (handler *ConjureFileHandler) ReadAny() (interface{}, error) {
 // BuildConjureFile
 // recursively build the conjure file
 func (handler *ConjureFileHandler) BuildConjureFile() (*ConjureFileHandler, error) {
-	var err error
-
 	validate := validator.New()
 
 	config := &ConjureConfig{}
@@ -192,7 +190,7 @@ func (handler *ConjureFileHandler) BuildConjureFile() (*ConjureFileHandler, erro
 	var parentFileHandler *ConjureFileHandler
 
 	if config.Inherit != "" {
-		parent, err = internal.FromGOB64(config.Inherit)
+		parentAny, err := internal.FromGOB64(config.Inherit)
 		if err != nil {
 			configPath := handler.options.conjureFile.(string)
 
@@ -210,7 +208,10 @@ func (handler *ConjureFileHandler) BuildConjureFile() (*ConjureFileHandler, erro
 				return nil, err
 			}
 
+		} else {
+			parent = parentAny.(*ConjureFileHandler)
 		}
+
 	}
 
 	return &ConjureFileHandler{

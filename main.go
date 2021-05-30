@@ -1,8 +1,8 @@
 package main
 
 import (
-	conjure2 "Conjure/pkg/conjure"
-	"Conjure/pkg/handler"
+	"github.com/Oleaintueri/Conjure/pkg/conjure"
+	"github.com/Oleaintueri/Conjure/pkg/handler"
 )
 
 func main() {
@@ -14,13 +14,17 @@ func main() {
 
 	h, err = h.BuildConjureFile()
 
-	c, err := conjure2.New(h)
+	c, err := conjure.New(h)
 
 	if err != nil {
 		panic(err)
 	}
 
 	if err = c.Recall(); err != nil {
+		panic(err)
+	}
+
+	if err = c.WriteFiles(); err != nil {
 		panic(err)
 	}
 }
