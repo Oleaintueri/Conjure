@@ -5,17 +5,19 @@ files:
   
 tags:
   - id: production
-    path: output/config.production.yml
+    path: example/output/config.production.yml
   - id: development
-    path: output/config.development.yml
+    path: example/output/config.development.yml
+  - id: staging
+    path: example/output/config.staging.yml
 
 groups:
   - id: conjure<production>
-    values:
+    items:
       - id: secret
         value: productionsecret
   
   - id: conjure<development>
-    values:
+    items:
       - id: secret
         value: developmentsecret

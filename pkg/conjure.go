@@ -4,6 +4,8 @@ import (
 	"Conjure/pkg/internal"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -27,7 +29,7 @@ type ConfigGroups struct {
 	Items []struct {
 		Id    string `yaml:"id"`
 		Value string `yaml:"value"`
-	}
+	} `yaml:"items"`
 }
 
 type Config struct {
@@ -69,12 +71,14 @@ func buildConfigInheritance(configPath string, inheritance *configInheritance) (
 
 	if config.Inherit != "" {
 		if !strings.Contains(config.Inherit, "/") {
-			path := strings.Split(configPath, "/")
-			configPath = fmt.Sprintf("%s/%s", strings.Join(path[:len(path)-1], "/"), config.Inherit)
+			configPath = path.Join(path.Dir(configPath), config.Inherit)
 		} else {
 			configPath = config.Inherit
 		}
-		return buildConfigInheritance(configPath, inheritance)
+
+		if inheritance, err = buildConfigInheritance(configPath, inheritance); err != nil {
+			return nil, err
+		}
 	}
 
 	return &configInheritance{
@@ -88,6 +92,7 @@ func (conjure *Conjure) Recall() error {
 		targetName, targetTags := internal.ExtractIdTag(targetFile.Output)
 		targetFile.currentName = targetName
 		if len(targetTags) == 1 && targetTags[0] == "tags" {
+			backupTemplate := targetFile.fileData
 			for _, customTags := range conjure.config.config.Tags {
 				targetFile.currentTag = customTags.Id
 				if err := recall(conjure.config, targetFile); err != nil {
@@ -96,6 +101,7 @@ func (conjure *Conjure) Recall() error {
 				if err := conjure.writeFile(targetFile); err != nil {
 					return err
 				}
+				targetFile.fileData = backupTemplate
 			}
 		} else {
 			for _, tag := range targetTags {
@@ -144,7 +150,7 @@ func (inheritance *configInheritance) extract(targetFile []byte, targetTag strin
 		for _, tag := range tags {
 			if tag == targetTag {
 				for _, item := range group.Items {
-					re := regexp.MustCompile(fmt.Sprintf(`\${%s\.%s}`, groupId[0], item.Id))
+					re := regexp.MustCompile(fmt.Sprintf(`\${%s\.%s}`, groupId, item.Id))
 					targetFile = re.ReplaceAll(targetFile, []byte(item.Value))
 				}
 			}
@@ -179,7 +185,10 @@ func (conjure *Conjure) writeFile(targetFile *ConfigFile) error {
 		return fmt.Errorf("the specified targetFilename for fileId `%s` is not correctly specified", targetFile.Id)
 	}
 
-	err = ioutil.WriteFile(targetFileName, targetFile.fileData, 0644)
+	parentPath := path.Dir(targetFileName)
+	_ = os.MkdirAll(parentPath, 0700)
+
+	err = ioutil.WriteFile(targetFileName, targetFile.fileData, 0700)
 
 	return err
 }
