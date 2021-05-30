@@ -1,6 +1,10 @@
 package internal
 
 import (
+	"Conjure/pkg/handler"
+	"bytes"
+	"encoding/base64"
+	"encoding/gob"
 	"net/url"
 	"regexp"
 )
@@ -48,4 +52,37 @@ func ParseFilePath(fileName string) (string, error) {
 		return "", err
 	}
 	return targetFileUrl.EscapedPath(), nil
+}
+
+// go binary encoder
+func ToGOB64(config *handler.ConjureFileHandler) (string, error) {
+	b := bytes.Buffer{}
+	e := gob.NewEncoder(&b)
+
+	if err := e.Encode(config); err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
+}
+
+// go binary decoder
+func FromGOB64(str string) (*handler.ConjureFileHandler, error) {
+	config := &handler.ConjureFileHandler{}
+
+	by, err := base64.StdEncoding.DecodeString(str)
+
+	if err != nil {
+		return nil, err
+	}
+
+	b := bytes.Buffer{}
+	b.Write(by)
+	d := gob.NewDecoder(&b)
+
+	if err = d.Decode(config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
