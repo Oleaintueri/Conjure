@@ -1,18 +1,30 @@
 package main
 
 import (
-	conjure "Conjure/pkg"
-	"log"
+	"github.com/Oleaintueri/Conjure/pkg/conjure"
+	"github.com/Oleaintueri/Conjure/pkg/handler"
 )
 
 func main() {
-	c, err := conjure.New("example/conjure.yml")
+	h, err := handler.New(handler.WithFile("example/conjure.yml", nil), handler.WithParser(handler.Yaml), handler.WithFileType(handler.FilePath))
 
 	if err != nil {
-		log.Fatalf("error %v", err)
+		panic(err)
+	}
+
+	h, err = h.BuildConjureFile()
+
+	c, err := conjure.New(h)
+
+	if err != nil {
+		panic(err)
 	}
 
 	if err = c.Recall(); err != nil {
-		log.Fatalf("error %v", err)
+		panic(err)
+	}
+
+	if err = c.WriteFiles(); err != nil {
+		panic(err)
 	}
 }
