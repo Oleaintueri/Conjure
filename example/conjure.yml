@@ -1,9 +1,9 @@
 inherit: conjure_parent.yml
 
 files:
-#  - id: config
-#    path: example/templates/config.yml
-#    output: <tags>
+  - id: config
+    path: example/templates/config.yml
+    output: <tags>
   - id: config2
     path: example/templates/config.yml
     output: example/output/config.default.yml
