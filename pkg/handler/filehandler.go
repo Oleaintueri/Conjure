@@ -33,7 +33,7 @@ type ConjureGroups struct {
 	Id    string `koanf:"id" validate:"required"`
 	Items []struct {
 		Id    string `koanf:"id" validate:"required"`
-		Value string `koanf:"value" validate:"required"`
+		Value interface{} `koanf:"value" validate:"required"`
 	} `koanf:"items"`
 }
 

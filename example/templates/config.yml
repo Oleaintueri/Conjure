@@ -1,3 +1,4 @@
-host: ${conjure.host}
+host: ${conjure.host|conjure-alt.host}
 port: ${conjure.port}
 secret: ${conjure.secret}
+many-items: ${conjure.many_items}

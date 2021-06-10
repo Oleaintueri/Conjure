@@ -18,6 +18,10 @@ func load(conjureFile string) error {
 
 	h, err = h.BuildConjureFile()
 
+	if err != nil {
+		return err
+	}
+
 	c, err := conjure.New(h)
 
 	if err != nil {

@@ -1,0 +1,16 @@
+files:
+  - id: config-alt
+    path: example/templates/config.yml # using the same template
+    output: <tags>/config.alt.yml # also using the same tags with a different file name
+    
+tags:
+  - id: production
+    path: example/output/config.production.yml
+
+groups:
+  - id: conjure-alt<production>
+    items:
+      - id: host
+        value: 192.131.31.232
+      - id: port
+        value: 10000
