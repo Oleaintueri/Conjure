@@ -41,12 +41,12 @@ tags:
 
 groups:
   - id: conjure<production>
-    values:
+    items:
       - id: secret
         value: productionsecret
   
   - id: conjure<development>
-    values:
+    items:
       - id: secret
         value: developmentsecret
 ```
@@ -72,30 +72,40 @@ tags:
 
 groups:
   - id: conjure<production>
-    values:
+    items:
       - id: host
         value: 0.0.0.0
       - id: port
         value: 8753
   
   - id: conjure<development>
-    values:
+    items:
       - id: host
         value: 127.0.0.1
       - id: port
         value: 8080
 
   - id: conjure
-    values:
+    items:
       - id: host
         value: 193.241.344.111
       - id: port
         value: 64356
 ```
 
+`conjure-alt.yml` is a `conjure` holding alternative configs
+```yaml
+inherit: conjure.yml
+
+files:
+  - id: config-alt
+    path: templates/config.yml # using the same template
+    output: <tags> # also using the same tags
+```
+
 `config.yml` is your `template` structure
 ```yaml
-host: ${conjure.host}
+host: ${conjure.host|conjure-alt.host}
 port: ${conjure.port}
 secret: ${conjure.secret}
 ```

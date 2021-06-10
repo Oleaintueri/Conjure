@@ -26,6 +26,11 @@ groups:
         value: 0.0.0.0
       - id: port
         value: 8753
+      - id: many_items
+        value:
+          - item1
+          - item2
+          - item3
   
   - id: conjure<development>
     items:

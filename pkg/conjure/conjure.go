@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"reflect"
 	"regexp"
+	"strconv"
 )
 
 type Conjure struct {
@@ -121,8 +123,25 @@ func (conjure *Conjure) extract(inheritance *handler.ConjureFileHandler, targetF
 		for _, tag := range tags {
 			if tag == targetTag {
 				for _, item := range group.Items {
-					re := regexp.MustCompile(fmt.Sprintf(`\${%s\.%s}`, groupId, item.Id))
-					targetFile = re.ReplaceAll(targetFile, []byte(item.Value))
+					val := reflect.ValueOf(item.Value)
+					re := regexp.MustCompile(fmt.Sprintf(`\${.*(?:%s\.%s).*}`, groupId, item.Id))
+					switch val.Kind() {
+					case reflect.Int, reflect.Int64, reflect.Int32:
+						targetFile = re.ReplaceAll(targetFile, []byte(strconv.FormatInt(val.Int(), 10)))
+					case reflect.String:
+						targetFile = re.ReplaceAll(targetFile, []byte(val.String()))
+					case reflect.Array, reflect.Slice, reflect.Interface:
+						var out string
+						for i := 0; i < val.Len(); i++ {
+							switch val.Index(i).Kind() {
+							case reflect.Interface:
+								out += fmt.Sprintf("%s,", val.Index(i).Interface().(string))
+							case reflect.Int, reflect.Int64, reflect.Int32:
+								out += fmt.Sprintf("%s,", strconv.FormatInt(val.Index(i).Int(), 10))
+							}
+						}
+						targetFile = re.ReplaceAll(targetFile, []byte(fmt.Sprintf("[%s]", out[:len(out)-1])))
+					}
 				}
 			}
 		}
@@ -141,6 +160,9 @@ func (conjure *Conjure) writeFile(targetFile *handler.ConjureFile) error {
 		tagPath := conjure.tagSearch(targetFile.CurrentTag)
 		if tagPath == "" {
 			tagPath = "."
+		}
+		if targetFile.CurrentName != "" {
+			tagPath = path.Dir(tagPath)
 		}
 
 		if targetFileName, err = internal.ParseFilePath(fmt.Sprintf("%s%s", tagPath, targetFile.CurrentName)); err != nil {
