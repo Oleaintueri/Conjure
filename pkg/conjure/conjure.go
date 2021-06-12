@@ -7,9 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"reflect"
 	"regexp"
-	"strconv"
 )
 
 type Conjure struct {
@@ -50,9 +48,6 @@ func (conjure *Conjure) Recall() error {
 				if err := conjure.recall(conjure.ConjureFileHandler, targetFile); err != nil {
 					return err
 				}
-				/*if err := conjure.writeFile(targetFile); err != nil {
-					return err
-				}*/
 
 				tmp := *targetFile
 				conjure.recalls = append(conjure.recalls, tmp)
@@ -64,9 +59,6 @@ func (conjure *Conjure) Recall() error {
 			if err := conjure.recall(conjure.ConjureFileHandler, targetFile); err != nil {
 				return err
 			}
-			/*if err := conjure.writeFile(targetFile); err != nil {
-				return err
-			}*/
 
 			tmp := *targetFile
 			conjure.recalls = append(conjure.recalls, tmp)
@@ -101,14 +93,14 @@ func (conjure *Conjure) recall(inheritance *handler.ConjureFileHandler, targetFi
 		}
 	}
 
-	targetFile.FileData = conjure.extract(inheritance, targetFile.FileData, targetFile.CurrentTag)
+	targetFile.FileData, err = conjure.extract(inheritance, targetFile.FileData, targetFile.CurrentTag)
 
 	return err
 }
 
 // extract
 // return the targetFile data and related tag if it exists
-func (conjure *Conjure) extract(inheritance *handler.ConjureFileHandler, targetFile []byte, targetTag string) []byte {
+func (conjure *Conjure) extract(inheritance *handler.ConjureFileHandler, targetFile []byte, targetTag string) ([]byte, error) {
 	var tags []string
 	var groupId string
 
@@ -123,32 +115,23 @@ func (conjure *Conjure) extract(inheritance *handler.ConjureFileHandler, targetF
 		for _, tag := range tags {
 			if tag == targetTag {
 				for _, item := range group.Items {
-					val := reflect.ValueOf(item.Value)
+
 					re := regexp.MustCompile(fmt.Sprintf(`\${.*(?:%s\.%s).*}`, groupId, item.Id))
-					switch val.Kind() {
-					case reflect.Int, reflect.Int64, reflect.Int32:
-						targetFile = re.ReplaceAll(targetFile, []byte(strconv.FormatInt(val.Int(), 10)))
-					case reflect.String:
-						targetFile = re.ReplaceAll(targetFile, []byte(val.String()))
-					case reflect.Array, reflect.Slice, reflect.Interface:
-						var out string
-						for i := 0; i < val.Len(); i++ {
-							switch val.Index(i).Kind() {
-							case reflect.Interface:
-								out += fmt.Sprintf("%s,", val.Index(i).Interface().(string))
-							case reflect.Int, reflect.Int64, reflect.Int32:
-								out += fmt.Sprintf("%s,", strconv.FormatInt(val.Index(i).Int(), 10))
-							}
-						}
-						targetFile = re.ReplaceAll(targetFile, []byte(fmt.Sprintf("[%s]", out[:len(out)-1])))
+
+					val, err := inheritance.ToBytes(item.Value)
+
+					if err != nil {
+						return nil, err
 					}
+
+					targetFile = re.ReplaceAll(targetFile, val)
 				}
 			}
 		}
 
 	}
 
-	return targetFile
+	return targetFile, nil
 }
 
 func (conjure *Conjure) writeFile(targetFile *handler.ConjureFile) error {

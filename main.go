@@ -10,7 +10,10 @@ import (
 )
 
 func load(conjureFile string) error {
-	h, err := handler.New(handler.WithFile(conjureFile, nil), handler.WithParser(handler.Yaml), handler.WithFileType(handler.FilePath))
+	h, err := handler.New(
+		handler.WithFile(conjureFile, nil),
+		handler.WithParser(handler.Yaml),
+		handler.WithFileType(handler.FilePath))
 
 	if err != nil {
 		return err

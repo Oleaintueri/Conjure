@@ -165,7 +165,7 @@ groups:
 #### Inheritance
 
 In the case of inheritance the files listed inside the parent `conjure`
-are ignored.
+are ignored. If the parent could not be read it will just ignore it.
 
 ```yaml
 inherit: conjure_parent.yml

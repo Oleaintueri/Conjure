@@ -28,9 +28,17 @@ groups:
         value: 8753
       - id: many_items
         value:
-          - item1
-          - item2
-          - item3
+          something:
+            - item1
+            - item2
+            - item3
+      - id: objects
+        value:
+          an_object:
+            has_key: and_val
+            has_another: 1234
+            has_more_objects:
+              has_more_keys: and_another_val
   
   - id: conjure<development>
     items:
